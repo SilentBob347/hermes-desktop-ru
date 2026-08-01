@@ -1,11 +1,10 @@
 #!/bin/bash
-# Hermes Desktop Russian Locale Installer
-# Устанавливает русский язык в десктопное приложение Hermes Agent
+# Hermes Desktop Russian Locale Installer (v2, 2026-08-01)
+# Устанавливает русский язык в десктопное приложение Hermes Agent (v0.19.1)
 #
 # Использование:
-#   curl -sSL https://raw.githubusercontent.com/user/hermes-desktop-ru/main/install.sh | bash
-#   или
-#   git clone https://github.com/user/hermes-desktop-ru.git && cd hermes-desktop-ru && ./install.sh
+#   git clone https://github.com/warment/hermes-desktop-ru.git && cd hermes-desktop-ru && ./install.sh
+#   или с указанием пути: ./install.sh /path/to/hermes-agent
 
 set -e
 
@@ -14,16 +13,61 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
-HERMES_DIR=""
+HERMES_DIR="${1:-}"
 REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 log()   { echo -e "${GREEN}[✓]${NC} $1"; }
 warn()  { echo -e "${YELLOW}[!]${NC} $1"; }
 error() { echo -e "${RED}[✗]${NC} $1"; exit 1; }
 
+# Список всех файлов перевода (патчи i18n + компоненты)
+FILES=(
+  "apps/desktop/src/i18n/catalog.ts"
+  "apps/desktop/src/i18n/en.ts"
+  "apps/desktop/src/i18n/languages.ts"
+  "apps/desktop/src/i18n/ru.ts"
+  "apps/desktop/src/i18n/types.ts"
+  "apps/desktop/src/i18n/zh.ts"
+  "apps/desktop/src/app/settings/ru-constants.ts"
+  "apps/desktop/src/app/chat/index.tsx"
+  "apps/desktop/src/app/chat/session-tile.tsx"
+  "apps/desktop/src/app/chat/sidebar/profile-switcher.tsx"
+  "apps/desktop/src/app/contrib/controller.tsx"
+  "apps/desktop/src/app/contrib/panes.tsx"
+  "apps/desktop/src/app/pet-generate/components/generate-unavailable.tsx"
+  "apps/desktop/src/app/pet-generate/components/reference-chip.tsx"
+  "apps/desktop/src/app/pet-overlay/overlay-root.tsx"
+  "apps/desktop/src/app/pet-overlay/pet-overlay-app.tsx"
+  "apps/desktop/src/app/quick-entry/quick-entry-app.tsx"
+  "apps/desktop/src/app/quick-entry/quick-entry-root.tsx"
+  "apps/desktop/src/app/settings/appearance-settings.tsx"
+  "apps/desktop/src/app/settings/billing/auto-reload-row.tsx"
+  "apps/desktop/src/app/settings/billing/current-plan-card.tsx"
+  "apps/desktop/src/app/settings/billing/index.tsx"
+  "apps/desktop/src/app/settings/billing/inline-feedback.tsx"
+  "apps/desktop/src/app/settings/billing/plans-view.tsx"
+  "apps/desktop/src/app/settings/combobox-input.tsx"
+  "apps/desktop/src/app/settings/computer-use-panel.tsx"
+  "apps/desktop/src/app/settings/custom-endpoints-settings.tsx"
+  "apps/desktop/src/app/settings/model-settings.tsx"
+  "apps/desktop/src/app/settings/uninstall-section.tsx"
+  "apps/desktop/src/app/shell/model-menu-panel.tsx"
+  "apps/desktop/src/app/skills/mcp-tab.tsx"
+  "apps/desktop/src/app/starmap/star-map.tsx"
+  "apps/desktop/src/app/starmap/timeline.tsx"
+  "apps/desktop/src/components/assistant-ui/embeds/spotify-embed.tsx"
+  "apps/desktop/src/components/assistant-ui/embeds/youtube-embed.tsx"
+  "apps/desktop/src/components/assistant-ui/thread/message-reactions.tsx"
+  "apps/desktop/src/components/assistant-ui/thread/timeline.tsx"
+  "apps/desktop/src/components/assistant-ui/tool/fallback.tsx"
+  "apps/desktop/src/components/chat/generated-image-result.tsx"
+  "apps/desktop/src/components/pet/pet-egg-hatch.tsx"
+  "apps/desktop/src/components/ui/split-button.tsx"
+)
+
 # --- Find Hermes installation ---
 find_hermes() {
-  # Check common locations
+  [ -n "$HERMES_DIR" ] && return 0
   local candidates=(
     "$HOME/.hermes/hermes-agent"
     "$HOME/hermes-agent"
@@ -31,15 +75,13 @@ find_hermes() {
     "$HOME/Dev/hermes-agent"
     "$HOME/projects/hermes-agent"
   )
-
   for dir in "${candidates[@]}"; do
     if [ -d "$dir/apps/desktop/src/i18n" ]; then
       HERMES_DIR="$dir"
       return 0
     fi
   done
-
-  # Try to find via `which hermes` or process
+  # Try to find via `which hermes`
   local hermes_bin
   hermes_bin=$(which hermes 2>/dev/null || true)
   if [ -n "$hermes_bin" ]; then
@@ -54,7 +96,6 @@ find_hermes() {
       fi
     fi
   fi
-
   return 1
 }
 
@@ -76,106 +117,34 @@ check_existing() {
 backup() {
   local backup_dir="$HERMES_DIR/.ru-backup-$(date +%Y%m%d%H%M%S)"
   mkdir -p "$backup_dir"
-
-  local files=(
-    "apps/desktop/src/i18n/types.ts"
-    "apps/desktop/src/i18n/languages.ts"
-    "apps/desktop/src/i18n/catalog.ts"
-    "apps/desktop/src/i18n/en.ts"
-    "apps/desktop/src/i18n/zh.ts"
-    "apps/desktop/src/app/settings/index.tsx"
-    "apps/desktop/src/app/settings/config-settings.tsx"
-    "apps/desktop/src/app/settings/keys-settings.tsx"
-    "apps/desktop/src/app/settings/model-settings.tsx"
-    "apps/desktop/src/app/settings/gateway-settings.tsx"
-    "apps/desktop/src/app/settings/mcp-settings.tsx"
-    "apps/desktop/src/app/settings/providers-settings.tsx"
-    "apps/desktop/src/app/settings/sessions-settings.tsx"
-    "apps/desktop/src/app/settings/toolset-config-panel.tsx"
-    "apps/desktop/src/app/skills/index.tsx"
-  )
-
-  for f in "${files[@]}"; do
+  for f in "${FILES[@]}"; do
     if [ -f "$HERMES_DIR/$f" ]; then
       mkdir -p "$backup_dir/$(dirname "$f")"
       cp "$HERMES_DIR/$f" "$backup_dir/$f"
     fi
   done
-
   log "Бэкап создан: $backup_dir"
   echo "$backup_dir" > "$HERMES_DIR/.ru-last-backup"
 }
 
-# --- Apply patches ---
+# --- Apply files ---
 apply_patches() {
   log "Копирование файлов перевода..."
 
-  # Copy new files
-  cp "$REPO_DIR/patches/ru.ts" "$HERMES_DIR/apps/desktop/src/i18n/ru.ts"
+  # i18n-файлы (полные версии en/zh/types/catalog/languages + ru)
+  cp "$REPO_DIR/patches/i18n/"*.ts "$HERMES_DIR/apps/desktop/src/i18n/"
+  # ru-constants.ts (поля настроек)
   cp "$REPO_DIR/patches/ru-constants.ts" "$HERMES_DIR/apps/desktop/src/app/settings/ru-constants.ts"
+  # переведённые компоненты (биллинг, компьютер, эмодзи-пикер, оверлеи и т.д.)
+  rsync -a "$REPO_DIR/patches/src/" "$HERMES_DIR/apps/desktop/src/"
 
-  log "Патч i18n системы..."
-
-  # Patch types.ts - add 'ru' to Locale
-  cd "$HERMES_DIR"
-  if ! grep -q "'ru'" apps/desktop/src/i18n/types.ts; then
-    sed -i '' "s/export type Locale = 'en' | 'zh'/export type Locale = 'en' | 'zh' | 'ru'/" apps/desktop/src/i18n/types.ts
-    log "types.ts: добавлен 'ru' в Locale"
-  fi
-
-  # Patch languages.ts - add ru to LOCALE_OPTIONS and aliases
-  if ! grep -q "id: 'ru'" apps/desktop/src/i18n/languages.ts; then
-    sed -i '' "/id: 'zh',/a\\
-  },\\
-  {\\
-    id: 'ru',\\
-    name: 'Русский',\\
-    configValue: 'ru'\\
-  }" apps/desktop/src/i18n/languages.ts
-    log "languages.ts: добавлен ru в LOCALE_OPTIONS"
-  fi
-
-  if ! grep -q "'русский': 'ru'" apps/desktop/src/i18n/languages.ts; then
-    sed -i '' "/zh_hans_cn: 'zh'/a\\
-  ,\\
-  ru: 'ru',\\
-  'ru-ru': 'ru',\\
-  ru_ru: 'ru',\\
-  'русский': 'ru'" apps/desktop/src/i18n/languages.ts
-    log "languages.ts: добавлены алиасы"
-  fi
-
-  # Patch catalog.ts - import and register ru
-  if ! grep -q "import { ru }" apps/desktop/src/i18n/catalog.ts; then
-    sed -i '' "s/import { zh } from '.\/zh'/import { ru } from '.\/ru'\\nimport { zh } from '.\/zh'/" apps/desktop/src/i18n/catalog.ts
-    sed -i '' "s/en,\\n  zh/en,\\n  zh,\\n  ru/" apps/desktop/src/i18n/catalog.ts
-    # More robust: replace the TRANSLATIONS object
-    python3 -c "
-import re
-with open('apps/desktop/src/i18n/catalog.ts', 'r') as f:
-    content = f.read()
-if 'ru' not in content.split('TRANSLATIONS')[1].split('}')[0]:
-    content = content.replace('en,\\n  zh}', 'en,\\n  zh,\\n  ru}')
-    with open('apps/desktop/src/i18n/catalog.ts', 'w') as f:
-        f.write(content)
-" 2>/dev/null || true
-    log "catalog.ts: зарегистрирован ru"
-  fi
-
-  log "Патч компонентов настроек..."
-
-  # Apply component patches via python (more reliable than sed for complex replacements)
-  python3 "$REPO_DIR/scripts/patch-components.py" "$HERMES_DIR"
-
-  log "Патч описаний навыков..."
-  python3 "$REPO_DIR/scripts/patch-skills.py" "$HERMES_DIR"
+  log "Все 41 файл перевода применены"
 }
 
 # --- Build ---
 build() {
-  log "Сборка приложения..."
+  log "Сборка приложения (несколько минут)..."
   cd "$HERMES_DIR/apps/desktop"
-
   if npm run pack 2>&1 | tail -5; then
     log "Сборка завершена успешно"
   else
@@ -218,8 +187,8 @@ PLIST
 
 # --- Main ---
 echo ""
-echo "🇷🇺 Hermes Desktop Russian Locale Installer"
-echo "============================================"
+echo "🇷🇺 Hermes Desktop Russian Locale Installer v2"
+echo "=============================================="
 echo ""
 
 if ! find_hermes; then
@@ -235,7 +204,7 @@ install_autopatch
 
 echo ""
 echo "============================================"
-log "Готово! Русский язык установлен."
+log "Готово! Русский язык установлен (~99% интерфейса)."
 echo ""
 echo "Запустите Hermes Desktop и выберите:"
 echo "  Settings → Appearance → Русский"

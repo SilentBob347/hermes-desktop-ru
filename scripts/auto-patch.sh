@@ -30,9 +30,14 @@ if [ ! -f "$HERMES_DIR/.ru-last-backup" ]; then
   exit 0
 fi
 
-# Check if ru.ts still exists (was overwritten by update)
-if [ ! -f "$HERMES_DIR/apps/desktop/src/i18n/ru.ts" ]; then
+# Re-apply if ru.ts was overwritten by an update
+if [ ! -f "$HERMES_DIR/apps/desktop/src/i18n/ru.ts" ] || ! grep -q "Hermes Desktop готов" "$HERMES_DIR/apps/desktop/src/i18n/ru.ts" 2>/dev/null; then
   echo "[$(date)] Hermes updated, re-applying Russian translation..."
-  cd "$REPO_DIR"
-  bash install.sh --silent 2>/dev/null
+  # Копируем i18n-файлы
+  cp "$REPO_DIR/patches/i18n/"*.ts "$HERMES_DIR/apps/desktop/src/i18n/"
+  cp "$REPO_DIR/patches/ru-constants.ts" "$HERMES_DIR/apps/desktop/src/app/settings/ru-constants.ts"
+  rsync -a "$REPO_DIR/patches/src/" "$HERMES_DIR/apps/desktop/src/"
+  # Пересборка
+  cd "$HERMES_DIR/apps/desktop" && npm run pack >/dev/null 2>&1 || true
+  echo "[$(date)] Russian locale re-applied"
 fi

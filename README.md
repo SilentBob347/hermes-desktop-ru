@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/🇭🇷_Hermes_Desktop-Russian_locale-FFD700?style=for-the-badge&labelColor=1a1a2e" alt="Hermes Desktop Russian Locale" width="100%">
+  <img src="https://img.shields.io/badge/Hermes_Desktop-Russian_locale_v2-FFD700?style=for-the-badge&labelColor=1a1a2e" alt="Hermes Desktop Russian Locale v2" width="100%">
 </p>
 
-<h1 align="center">🇭🇷 Hermes Desktop — Русский язык</h1>
+<h1 align="center">🇷🇺 Hermes Desktop — Русский язык (v2)</h1>
 
 <p align="center">
   <a href="https://github.com/NousResearch/hermes-agent"><img src="https://img.shields.io/badge/Hermes_Agent-Official_Repo-FFD700?style=for-the-badge&logo=github" alt="Hermes Agent"></a>
@@ -12,8 +12,8 @@
 </p>
 
 <p align="center">
-  <b>Автоматическая установка русского языка в десктопном приложении Hermes Agent.</b><br>
-  Одна команда — и весь интерфейс на русском.
+  <b>Полная русификация десктопного приложения Hermes Agent — ~99% всех строк интерфейса.</b><br>
+  [<b>Русский</b>] · [<a href="README.en.md">English</a>] · [<a href="README.zh.md">中文</a>]
 </p>
 
 ---
@@ -32,32 +32,31 @@ cd hermes-desktop-ru
 curl -sSL https://raw.githubusercontent.com/warment/hermes-desktop-ru/main/install.sh | bash
 ```
 
+> ⚠️ Требуется Hermes Agent **v0.19.1** (2026-07-30) или новее — скрипт подставляет полные файлы перевода поверх исходников.
+
 После установки: **Settings** → **Appearance** → **Русский**
 
 ---
 
-## ✨ Что переведено
+## ✨ Что переведено (v2)
 
-<table>
-<tr><td><b>Навигация настроек</b></td><td>Провайдеры, Аккаунты, API-ключи, Инструменты, Шлюз, MCP, Архивные чаты, О приложении</td></tr>
-<tr><td><b>Поля настроек</b></td><td>Все названия и описания (~60 ключей): Окно контекста, Личность, Рабочая директория, Режим выполнения кода и т.д.</td></tr>
-<tr><td><b>Состояния загрузки</b></td><td>Загрузка конфигурации, ключей, модели, шлюза, MCP-серверов, провайдеров, сессий</td></tr>
-<tr><td><b>Архивные сессии</b></td><td>Заголовок, описание, пустое состояние, кнопки, уведомления</td></tr>
-<tr><td><b>Директория проекта</b></td><td>Заголовок, описание, кнопки выбора/очистки</td></tr>
-<tr><td><b>MCP серверы</b></td><td>Создание, редактирование, перезагрузка, уведомления (~24 ключа)</td></tr>
-<tr><td><b>Шлюз</b></td><td>Локальный/удалённый, URL, аутентификация, диагностика (~35 ключей)</td></tr>
-<tr><td><b>Boot экран</b></td><td>Шаги загрузки, ошибки, экран восстановления</td></tr>
-<tr><td><b>Titlebar</b></td><td>Кнопки заголовка окна</td></tr>
-<tr><td><b>Composer</b></td><td>Поле ввода, голос, вложения, команды, подсказки</td></tr>
-<tr><td><b>Sidebar</b></td><td>Навигация по сессиям, поиск, группировка</td></tr>
-<tr><td><b>Описания навыков</b></td><td>apple-notes, apple-reminders, findmy, imessage, macos-operations и др.</td></tr>
-</table>
+- **Все 38 секций i18n** (~3000 строк `ru.ts`): меню, настройки, биллинг, уведомления, горячие клавиши, мастер-оверлеи, загрузка, установка, онбординг, статус-бар и др.
+- **Поля настроек** (`ru-constants.ts`): все названия и описания
+- **Hardcoded-строки компонентов** (41 файл):
+  - Биллинг: страница проверки, планы, автопополнение кредитов, фикстуры
+  - Удаление приложения (Danger zone), Computer Use (разрешения, driver health)
+  - MoA-пресеты, пользовательские эндпоинты, поиск тем, референсы генерации
+  - Окно Quick Entry и пет-оверлей (отдельные renderer-окна)
+  - Эмодзи-пикер, таймлайны сессий, star map (легенда/навык/память)
+  - Кнопки Show options / More actions, OAuth / API key, профили, вложения
+
+Сознательно не переведены: URL-примеры, имена провайдеров, файлы-конфиги (config.yaml, SOUL.md).
 
 ---
 
 ## 🛡️ Автоматическое обновление
 
-При обновлении Hermes русский перевод **автоматически пере-применяется** через macOS LaunchAgent. Скрипт следит за файлами Hermes и при обновлении снова применяет патч.
+При обновлении Hermes русский перевод **автоматически пере-применяется** через macOS LaunchAgent. Скрипт следит за файлами Hermes и при обновлении снова применяет файлы перевода.
 
 ---
 
@@ -67,7 +66,7 @@ curl -sSL https://raw.githubusercontent.com/warment/hermes-desktop-ru/main/insta
 ./uninstall.sh
 ```
 
-Восстановит оригинальные файлы из бэкапа и удалит русский перевод.
+Восстановит оригинальные файлы из бэкапа (все 41) и удалит русский перевод.
 
 ---
 
@@ -75,15 +74,14 @@ curl -sSL https://raw.githubusercontent.com/warment/hermes-desktop-ru/main/insta
 
 ```
 hermes-desktop-ru/
-├── install.sh              # Установщик
+├── install.sh              # Установщик (v2)
 ├── uninstall.sh            # Удаление
-├── README.md               # Документация
+├── README.md               # Документация (RU/EN/ZH)
 ├── patches/
-│   ├── ru.ts               # Русский перевод интерфейса (~850 строк)
-│   └── ru-constants.ts     # Русские названия полей настроек
+│   ├── i18n/               # Полные i18n-файлы (ru, en, zh, types, catalog, languages)
+│   ├── ru-constants.ts     # Русские названия полей настроек
+│   └── src/                # Переведённые компоненты (34 файла)
 └── scripts/
-    ├── patch-components.py # Патч компонентов настроек
-    ├── patch-skills.py     # Патч описаний навыков
     └── auto-patch.sh       # Auto-reapply при обновлении
 ```
 
@@ -92,20 +90,26 @@ hermes-desktop-ru/
 ## 🔧 Как это работает
 
 1. `install.sh` находит установку Hermes в стандартных расположениях
-2. Создаёт бэкап оригинальных файлов в `.ru-backup-*`
-3. Копирует `ru.ts` и `ru-constants.ts` в дерево исходников
-4. Патчит `types.ts`, `languages.ts`, `catalog.ts` для регистрации ru
-5. Патчит компоненты настроек (заменяет захардкоженные строки на `t.*`)
-6. Патчит `skills/index.tsx` для перевода описаний навыков
-7. Пересобирает приложение (`npm run pack`)
-8. Устанавливает LaunchAgent для auto-reapply при обновлении
+2. Создаёт бэкап всех 41 файла в `.ru-backup-*`
+3. Копирует i18n-файлы (полные версии, включая en/zh/types — типы всегда согласованы)
+4. Копирует переведённые компоненты поверх исходников
+5. Пересобирает приложение (`npm run pack`)
+6. Устанавливает LaunchAgent для auto-reapply при обновлении
+
+---
+
+## ✅ Проверки
+
+- `tsc --noEmit` → 0 ошибок
+- 694 теста passed (6 известных фейлов localStorage, не связаны с переводом)
+- Русские строки подтверждены в собранном `app.asar`
 
 ---
 
 ## 📋 Требования
 
 - macOS (для LaunchAgent auto-patcher)
-- Hermes Agent установлен в одном из стандартных расположений
+- Hermes Agent v0.19.1+ в одном из стандартных расположений
 - Node.js и npm (для сборки)
 
 ---
@@ -119,11 +123,11 @@ hermes-desktop-ru/
 
 ## 📣 Официальное обсуждение
 
-Issue в основном репозитории Hermes: [#40347](https://github.com/NousResearch/hermes-agent/issues/40347)
+PR в основном репозитории Hermes: [#42705](https://github.com/NousResearch/hermes-agent/pull/42705) · Issue: [#40347](https://github.com/NousResearch/hermes-agent/issues/40347)
 
 ---
 
-## 📄 Лизензия
+## 📄 Лицензия
 
 MIT License
 
